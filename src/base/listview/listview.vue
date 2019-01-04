@@ -49,7 +49,7 @@ export default {
     onshortcutTouchMove(e){
       let firstTouch = e.touches[0]
       this.touch.y2 = firstTouch.pageY
-      let distance = (this.touch.y2 - this.touch.y1)
+      let distance = this.touch.y2 - this.touch.y1
     }    
   }
 }
