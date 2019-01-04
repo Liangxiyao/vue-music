@@ -22,6 +22,8 @@
 import Scroll from 'base/scroll/scroll'
 import { getData } from 'common/js/dom'
 
+const ANCHOR_HEIGHT = 18
+
 export default {
   props: {
     data:{
@@ -39,17 +41,20 @@ export default {
       })
     }
   },
+  created(){
+    this.touch = {}
+  },
   methods:{
-    onshortcutTouchStart(e){
+    onshortcutTouchStart(e){ 
       let anchorIndex = getData(e.target,'index') //获取自定义数据的值
       let firstTouch = e.touches[0] //触摸的第一根手指
       this.touch.y1 = firstTouch.pageY  //获取触摸开始的y值
-      this.touch.anchorIndex =  anchorIndex 
+      this.touch.anchorIndex =  anchorIndex     
     },
     onshortcutTouchMove(e){
       let firstTouch = e.touches[0]
       this.touch.y2 = firstTouch.pageY
-      let distance = this.touch.y2 - this.touch.y1
+      let distance = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0
     }    
   }
 }
