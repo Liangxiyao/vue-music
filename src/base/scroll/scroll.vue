@@ -5,6 +5,7 @@
 </template>
 <script>
 import BScroll from "better-scroll";
+
 export default {
   props: {
     probeType: {
@@ -18,11 +19,15 @@ export default {
     data: {
       type: Array,
       default: null
+    },
+    listenScroll:{
+      type:Boolean,
+      default:false
     }
   },
   mounted() {
     setTimeout(() => {
-      this._initScroll();
+      this._initScroll()
     }, 20);
   },
   watch:{
@@ -35,12 +40,20 @@ export default {
   methods: {
     _initScroll() {
       if (!this.$refs.wrapper) {
-        return;
+        return
       }
       this.scroll = new BScroll(this.$refs.wrapper, {
         probeType: this.probeType,
         click: this.click
       });
+
+      if(this.listenScroll){
+        this.scroll.on('scroll', pos =>{
+          console.log(pos);
+          
+          this.$emit('scroll',pos)
+        })
+      }
     },
     enable() {
       this.scroll && this.scroll.enable();
@@ -53,6 +66,9 @@ export default {
     },
     scrollTo(){
       this.scroll && this.scrollTo.apply(this.scroll,arguments)
+    },
+    scrollToElement(){
+      this.scroll && this.scroll.scrollToElement.apply(this.scroll,arguments)
     }
   }
 };
