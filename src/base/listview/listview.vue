@@ -1,6 +1,7 @@
 <template>
   <scroll class="listview"  
           ref="listview"
+          :probeType="probeType"
           :data="data"  
           :listenScroll= "listenScroll"
           @scroll="scroll">
@@ -17,7 +18,11 @@
     </ul>
     <div class="list-shortcut" @touchstart="onshortcutTouchStart" @touchmove.stop.prevent="onshortcutTouchMove">
       <ul>
-        <li v-for="(item,index) in shortcutList" class="item" :data-index="index">{{item}}</li>
+        <li class="item"  
+        v-for="(item,index) in shortcutList" 
+        :class="{'current':currentIndex===index}"
+        :data-index="index"
+        >{{item}}</li>
       </ul>
     </div>
   </scroll>
@@ -31,6 +36,7 @@ const ANCHOR_HEIGHT = 18  //右边导航字母的固定高度
 
 export default {
   created(){
+    this.probeType = 3
     this.touch = {} //不在data里定义，是因为data定义的值基本和dom有关
     this.listenScroll = true
     this.listHeight = []
@@ -59,10 +65,10 @@ export default {
   },
   methods:{
     onshortcutTouchStart(e){ 
-      let anchorIndex = getData(e.target,'index') //获取自定义数据的值
+      let anchorIndex = getData(e.target,'index') //获取自定义数据的值      
       this.$refs.listview.scrollToElement(this.$refs.listGroup[anchorIndex],0)
       let firstTouch = e.touches[0] //触摸的第一根手指
-      this.touch.y1 = firstTouch.pageY  //获取触摸开始的y值
+      this.touch.y1 = firstTouch.pageY  //获取触摸开始的y值      
       this.touch.anchorIndex =  anchorIndex     
       this._scrollTo(anchorIndex)
     },
@@ -70,13 +76,23 @@ export default {
       let firstTouch = e.touches[0]
       this.touch.y2 = firstTouch.pageY
       let delta = (this.touch.y2 - this.touch.y1) / ANCHOR_HEIGHT | 0 // 或0表示向下取整，；类似于Math.floor
-      let anchorIndex =parseInt(this.touch.anchorIndex) + delta
+      let anchorIndex = parseInt(this.touch.anchorIndex) + delta
+      this._scrollTo(anchorIndex)
     }, 
     scroll(pos){
       this.scrollY = pos.y
-      console.log(this.scrollY);       
     }, 
     _scrollTo(index){
+      if(!index && index !==0){ //解决字母导航上下两部分点击触发字母不能高亮的问题
+        return
+      }
+      if(index < 0){  //拖动时，导航字母的边界处理
+        index = 0
+      }else if(index > this.listHeight.length - 2){
+        index = this.listHeight.length - 2
+      }
+      
+      this.scrollY = -this.listHeight[index]
       this.$refs.listview.scrollToElement(this.$refs.listGroup[index],0)
     },
     _calculateHeight(){
@@ -97,20 +113,24 @@ export default {
         this._calculateHeight()
       },20)
     },
-    scrollY(newY){
-      console.log(newY);
-      
+    scrollY(newY){ 
       const listHeight = this.listHeight
-      for(let i=0;i<listHeight.length;i++){
+      //滚动到顶部，newY>0
+      if(newY>0){
+        this.currentIndex = 0
+        return
+      }
+      //中间滚动
+      for(let i=0;i<listHeight.length-1;i++){
         let height1 = listHeight[i]
         let height2 = listHeight[i+1]
-        if(!height2 || (-newY > height1 && -newY < height2)){ //对比当前滚动的是第几个
+        if(!height2 || (-newY >= height1 && -newY < height2)){ //对比当前滚动的是第几个
           this.currentIndex = i
-          console.log(this.currentIndex )    
           return
         }
       }
-      this.currentIndex = 0
+      //滚动到底部，且-newY 大于最后一个元素的上限
+      this.currentIndex = listHeight.length - 2
 
     }
   }

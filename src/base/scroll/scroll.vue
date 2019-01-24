@@ -10,7 +10,7 @@ export default {
   props: {
     probeType: {
       type: Number,
-      default: 1
+      default: 1  
     },
     click: {
       type: Boolean,
@@ -48,9 +48,7 @@ export default {
       });
 
       if(this.listenScroll){
-        this.scroll.on('scroll', pos =>{
-          console.log(pos);
-          
+        this.scroll.on('scroll', pos =>{  
           this.$emit('scroll',pos)
         })
       }
